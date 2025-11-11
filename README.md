@@ -42,6 +42,17 @@ There is **no Docker configuration**. Both services run directly on your machine
 4. **Visit the flipbook**
    Browse to the Vite URL (shown in the console, typically `http://localhost:5173`) and upload a PDF to see it rendered as an animated book.
 
+### Optional: enable bundled CMaps for richer font support
+
+If you regularly work with PDFs that need pdf.js Character Maps, you can download them from the official `pdfjs-dist` release without committing large binary assets:
+
+```bash
+cd client
+npm run fetch-cmaps
+```
+
+This downloads the official pdf.js CMaps into `client/public/cmaps`. Set `VITE_PDF_CMAP_URL="/cmaps/"` in a `client/.env` file (or rely on the client auto-detection) and rebuild the app to make pdf.js load them.
+
 ## Production build & serving
 
 To build the client and serve it from the Express server:
@@ -74,7 +85,7 @@ For client-side tweaks, create a `.env` file in `client/` and set Vite environme
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `VITE_PDF_CMAP_URL` | _unset_ | Base URL where pdf.js CMaps are hosted (for example, `/cmaps/` or a CDN URL). When provided, the React client automatically points pdf.js at this directory and enables advanced font rendering. |
+| `VITE_PDF_CMAP_URL` | _unset_ | Base URL where pdf.js CMaps are hosted (for example, `/cmaps/` or a CDN URL). When provided, the React client automatically points pdf.js at this directory and enables advanced font rendering. If you run `npm run fetch-cmaps`, use `/cmaps/`. |
 
 ## API surface
 
@@ -149,8 +160,8 @@ This codebase currently represents an MVP. To mature it into a production-ready 
 
 The project no longer bundles these assets by default to keep the repository lean. If you want to support documents that depend on CMaps:
 
-1. Download the official CMaps package from the [pdf.js releases](https://github.com/mozilla/pdf.js/releases) (look for the `pdfjs-x.x.x-dist.zip` archive and extract the `web/cmaps/` folder).
-2. Host the extracted directory somewhere your client can reach (for example, copy it into `client/public/cmaps/` in your deployment or upload it to a CDN).
-3. Set `VITE_PDF_CMAP_URL` to the public URL of that directory (e.g., `/cmaps/` if you placed them in the client `public/` folder).
+1. Run `npm run fetch-cmaps` inside `client/` after installing dependencies. The script downloads the official pdf.js CMaps tarball from the npm registry, extracts the `cmaps` directory into `client/public/cmaps`, and keeps the assets out of source control. Ensure the machine running the script has internet access or the appropriate proxy configuration so the download succeeds.
+2. Set `VITE_PDF_CMAP_URL` to the public URL of that directory (e.g., `/cmaps/` if you’re serving from `client/public/cmaps/`). If you skip this step, the client will still attempt to auto-detect `/cmaps/` and enable them when available.
+3. Alternatively, host the CMaps on a CDN or static file server and point `VITE_PDF_CMAP_URL` to that external location.
 
-With the environment variable in place, the React viewer automatically instructs pdf.js to load CMaps from the provided location, unlocking full multilingual rendering fidelity.
+With the environment variable in place—or when the auto-detection finds `/cmaps/`—the React viewer instructs pdf.js to load CMaps from the provided location, unlocking full multilingual rendering fidelity.

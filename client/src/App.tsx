@@ -8,15 +8,56 @@ import './App.css';
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
-const CMAP_URL = import.meta.env.VITE_PDF_CMAP_URL?.trim() || null;
+const ENV_CMAP_URL = import.meta.env.VITE_PDF_CMAP_URL?.trim() ?? '';
+const DEFAULT_CMAP_DIRECTORY = '/cmaps/';
+const DEFAULT_CMAP_PROBE = `${DEFAULT_CMAP_DIRECTORY}Identity-H.bcmap`;
+
+function normaliseCMapUrl(url: string): string {
+  return url.endsWith('/') ? url : `${url}/`;
+}
+
+let cachedCMapUrl: string | null | undefined;
+
+async function resolveCMapUrl(): Promise<string | null> {
+  if (cachedCMapUrl !== undefined) {
+    return cachedCMapUrl;
+  }
+
+  if (ENV_CMAP_URL) {
+    cachedCMapUrl = normaliseCMapUrl(ENV_CMAP_URL);
+    return cachedCMapUrl;
+  }
+
+  try {
+    const headResponse = await fetch(DEFAULT_CMAP_PROBE, { method: 'HEAD' });
+    if (headResponse.ok) {
+      cachedCMapUrl = DEFAULT_CMAP_DIRECTORY;
+      return cachedCMapUrl;
+    }
+
+    if (headResponse.status === 405 || headResponse.status === 501) {
+      const getResponse = await fetch(DEFAULT_CMAP_PROBE, { method: 'GET', cache: 'no-store' });
+      if (getResponse.ok) {
+        cachedCMapUrl = DEFAULT_CMAP_DIRECTORY;
+        return cachedCMapUrl;
+      }
+    }
+  } catch (error) {
+    // Ignore network errors during detection. pdf.js will continue without CMaps.
+  }
+
+  cachedCMapUrl = null;
+  return cachedCMapUrl;
+}
 
 async function renderPdfPages(pdfData: Uint8Array): Promise<FlipbookPage[]> {
   const params: DocumentInitParameters = {
     data: pdfData
   };
 
-  if (CMAP_URL) {
-    params.cMapUrl = CMAP_URL;
+  const cMapUrl = await resolveCMapUrl();
+  if (cMapUrl) {
+    params.cMapUrl = cMapUrl;
     params.cMapPacked = true;
   }
 
