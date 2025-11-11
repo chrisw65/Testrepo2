@@ -111,7 +111,7 @@ For client-side tweaks, create a `.env` file in `client/` and set Vite environme
 - Implements custom easing, perspective transforms, shadows, and highlights to emulate realistic paper turns.
 - Gracefully degrades to local PDF parsing when the backend upload endpoint is not reachable and cleans up server-side documents when you clear the viewer or close the tab.
 - Lets readers toggle immersive page-turn audio and swap between multiple paper textures without reloading the document.
-- Can optionally load pdf.js **Character Maps (CMaps)** when you supply a hosted directory via `VITE_PDF_CMAP_URL`. The client also auto-detects a locally hosted `/cmaps/` directory created by `npm run fetch-cmaps`, enabling advanced font rendering without increasing the default bundle size.
+- Can optionally load pdf.js **Character Maps (CMaps)** when you supply a hosted directory via `VITE_PDF_CMAP_URL`, enabling advanced font rendering without increasing the default bundle size.
 
 ## Customising the reading experience
 
@@ -130,7 +130,6 @@ Once a PDF is loaded you can tailor the flipbook without re-uploading:
 - `npm run dev` – Start the Vite development server.
 - `npm run build` – Create a production-ready build in `client/dist`.
 - `npm run preview` – Serve the built assets locally for smoke testing.
-- `npm run fetch-cmaps` – Download the official pdf.js CMaps into `client/public/cmaps` for richer font rendering.
 
 ## Project structure
 
