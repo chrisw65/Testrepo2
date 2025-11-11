@@ -3,6 +3,7 @@ client/node_modules/
 server/node_modules/
 server/uploads/
 client/dist/
+client/public/cmaps/
 client/tsconfig.*.tsbuildinfo
 client/vite.config.js
 client/vite.config.d.ts
