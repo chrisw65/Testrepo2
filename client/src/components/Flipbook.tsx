@@ -216,50 +216,19 @@ export function Flipbook({ pages, texture, soundsEnabled }: FlipbookProps) {
   let flipOrigin: 'left' | 'right' = 'left';
   let flipAngle = 0;
   let flipShadowStrength = 0;
-  let flipTransform = '';
-  let flipSheenStyle: CSSProperties | undefined;
-  let flipShadowStyle: CSSProperties | undefined;
 
   if (turningForward && rightPage) {
     flipFront = rightPage;
     flipBack = nextPage ?? null;
-    flipOrigin = 'right';
-    const foldProgress = Math.sin(Math.PI * progress);
-    const curlProgress = Math.sin((Math.PI * progress) / 2);
-    const skew = -8 * foldProgress;
-    const translateX = -12 * foldProgress;
-    const translateZ = 18 * curlProgress;
+    flipOrigin = 'left';
     flipAngle = -180 * progress;
-    flipTransform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${flipAngle}deg) skewY(${skew}deg)`;
-    flipShadowStrength = 0.28 + 0.4 * foldProgress;
-    flipSheenStyle = {
-      opacity: 0.18 + 0.42 * foldProgress,
-      transform: `translateX(${(-18 + 36 * progress).toFixed(2)}%) skewY(${skew * 0.35}deg)`
-    };
-    flipShadowStyle = {
-      opacity: 0.32 + 0.3 * foldProgress,
-      transform: `translateX(${(-10 + 20 * progress).toFixed(2)}%) skewY(${skew * 0.25}deg)`
-    };
+    flipShadowStrength = 0.4 * Math.sin(Math.PI * progress);
   } else if (turningBackward && leftPage) {
     flipFront = leftPage;
     flipBack = previousPage ?? null;
-    flipOrigin = 'left';
-    const foldProgress = Math.sin(Math.PI * progress);
-    const curlProgress = Math.sin((Math.PI * progress) / 2);
-    const skew = 8 * foldProgress;
-    const translateX = 12 * foldProgress;
-    const translateZ = 18 * curlProgress;
-    flipAngle = 180 * progress;
-    flipTransform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${flipAngle}deg) skewY(${skew}deg)`;
-    flipShadowStrength = 0.28 + 0.4 * foldProgress;
-    flipSheenStyle = {
-      opacity: 0.18 + 0.42 * foldProgress,
-      transform: `translateX(${(18 - 36 * progress).toFixed(2)}%) skewY(${skew * 0.35}deg)`
-    };
-    flipShadowStyle = {
-      opacity: 0.32 + 0.3 * foldProgress,
-      transform: `translateX(${(10 - 20 * progress).toFixed(2)}%) skewY(${skew * 0.25}deg)`
-    };
+    flipOrigin = 'right';
+    flipAngle = -180 + 180 * progress;
+    flipShadowStrength = 0.4 * Math.sin(Math.PI * progress);
   }
 
   const spreadStyle = useMemo(() => {
@@ -283,21 +252,18 @@ export function Flipbook({ pages, texture, soundsEnabled }: FlipbookProps) {
   return (
     <div className={viewerClassName}>
       <div className="viewer__book" style={spreadStyle}>
-        <div
-          className={`book__page book__page--left ${
-            turningBackward ? 'book__page--outgoing' : ''
-          }`}
-          aria-hidden={!leftPage}
-        >
+        <div className="book__page book__page--left" aria-hidden={!leftPage}>
           <PageFace page={leftPage} placeholderLabel="Cover" texture={texture} />
         </div>
 
         <div
-          className={`book__page book__page--right ${turningForward ? 'book__page--incoming' : ''}`}
+          className={`book__page book__page--right ${
+            turningForward ? 'book__page--incoming' : ''
+          }`}
           aria-hidden={!rightPage}
         >
           <PageFace
-            page={rightPage}
+            page={turningForward ? nextPage : rightPage}
             placeholderLabel="First page"
             texture={texture}
           />
@@ -307,17 +273,24 @@ export function Flipbook({ pages, texture, soundsEnabled }: FlipbookProps) {
           <div
             className={`book__page book__page--turning book__page--${flipOrigin}`}
             style={{
-              transform: flipTransform || `rotateY(${flipAngle}deg)`,
-              boxShadow: `0 28px 64px rgba(15, 23, 42, ${flipShadowStrength.toFixed(3)})`
+              transformOrigin: `${flipOrigin} center`,
+              transform: `rotateY(${flipAngle}deg)`,
+              boxShadow: `0 24px 48px rgba(15, 23, 42, ${0.12 + flipShadowStrength})`
             }}
           >
             <div className="page-face page-face--front">
               <PageFace page={flipFront} placeholderLabel="" texture={texture} />
-              <div className="page-face__sheen" style={flipSheenStyle} />
+              <div
+                className="page-face__sheen"
+                style={{ opacity: 0.15 + 0.35 * Math.sin(Math.PI * progress) }}
+              />
             </div>
             <div className="page-face page-face--back">
               <PageFace page={flipBack} placeholderLabel="" texture={texture} />
-              <div className="page-face__shadow" style={flipShadowStyle} />
+              <div
+                className="page-face__shadow"
+                style={{ opacity: 0.25 + 0.3 * Math.sin(Math.PI * progress) }}
+              />
             </div>
           </div>
         )}
